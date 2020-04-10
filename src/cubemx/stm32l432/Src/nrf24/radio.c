@@ -41,9 +41,10 @@ uint32_t deviceID()
 	 //printf("halver=%lx\n", HAL_GetHalVersion());
 	 //printf("hal_RevId=%lx\n", HAL_GetREVID());
 	 //printf("hal_DevId=%lx\n", HAL_GetDEVID());
-	 printf("hal_UIDw0=%lx\n", HAL_GetUIDw0());
-	 printf("hal_UIDw1=%lx\n", HAL_GetUIDw1());
-	 printf("hal_UIDw2=%lx\n", HAL_GetUIDw2());
+
+	 //printf("hal_UIDw0=%lx\n", HAL_GetUIDw0());
+	 //printf("hal_UIDw1=%lx\n", HAL_GetUIDw1());
+	 //printf("hal_UIDw2=%lx\n", HAL_GetUIDw2());
 
    return firstBit;
 }
