@@ -18,7 +18,7 @@ void setLaserDetection(int onoff)
 
 void laser_init(void *data)
 {
-	char stringBuffer[16] = { 0 };
+  char stringBuffer[16] = { 0 };
 
   snprintf(stringBuffer, 16, "Pulse:");// write the data to a temporary buffer array.
   HD44780_GotoXY(0, 0);     // Move cursor to First Line First Position.
@@ -32,69 +32,66 @@ void laser_init(void *data)
 
 void lcdPrintPulse(const char* str)
 {
-	static char prev[16]={0,};
+  static char prev[16]={0,};
 
-	if (strcmp(prev, str) !=0) {
+  if (strcmp(prev, str) !=0) {
     HD44780_GotoXY(7, 0); // Move cursor to First Line First Position.
     HD44780_PutStr((char*)str);   // Now write it actually to LCD.
-		snprintf(prev, sizeof(prev), "%s", str);
-		printf("pulse\r\n");
-	}
+    snprintf(prev, sizeof(prev), "%s", str);
+  }
 }
 
 void lcdPrintLaser(const char* str)
 {
-	static char prev[16]={0,};
-	if (strcmp(prev, str) !=0) {
+  static char prev[16]={0,};
+  if (strcmp(prev, str) !=0) {
     HD44780_GotoXY(7, 1); // Move cursor to First Line First Position.
     HD44780_PutStr((char*)str);   // Now write it actually to LCD.
-		snprintf(prev, sizeof(prev), "%s", str);
-		printf("laser\r\n");
-	}
+    snprintf(prev, sizeof(prev), "%s", str);
+  }
 }
 
 void lcdClearLaser()
 {
-	const char *empty="         ";
-	lcdPrintLaser(empty);
+  const char *empty="         ";
+  lcdPrintLaser(empty);
 }
 
 void lcdClearPulse()
 {
-	const char *empty="         ";
-	lcdPrintPulse(empty);
+  const char *empty="         ";
+  lcdPrintPulse(empty);
 }
 
 void laser_run(void *data)
 {
-	static uint8_t sequence = 0;
-	char stringBuffer[16] = {0,};
+  static uint8_t sequence = 0;
+  char stringBuffer[16] = {0,};
 
-	if (isLaserDetected) {
-		// write the data to a temporary buffer array.
-		snprintf(stringBuffer, sizeof(stringBuffer), "%s-%d", "Det", sequence);
-		lcdPrintLaser(stringBuffer);
+  if (isLaserDetected) {
+    // write the data to a temporary buffer array.
+    snprintf(stringBuffer, sizeof(stringBuffer), "%s-%d", "Det", sequence);
+    lcdPrintLaser(stringBuffer);
 
-		/*
-		 insert your code for transmitting data using nRF module
-		 here.
-		 */
-		radio_send_data(stringBuffer, strlen(stringBuffer));
+    /*
+     insert your code for transmitting data using nRF module
+     here.
+     */
+    radio_send_data(stringBuffer, strlen(stringBuffer));
 
     setLaserDetection(0);
 
-	} else {
-		lcdClearLaser();
-	}
+  } else {
+    lcdClearLaser();
+  }
 
-	/* receive data from nRF */
-	int len = radio_recv_data(stringBuffer, sizeof(stringBuffer));
-	if (len) {
-		printf("rx=(%s)\r\n", stringBuffer);
-		lcdPrintPulse(stringBuffer);
-	} else {
-		lcdClearPulse();
-	}
+  /* receive data from nRF */
+  if (radio_recv_data(stringBuffer, sizeof(stringBuffer)) > 0) {
+    printf("rx=(%s)\r\n", stringBuffer);
+    lcdPrintPulse(stringBuffer);
+  } else {
+    lcdClearPulse();
+  }
 }
 
 ADD_TASK(laser_run, laser_init, NULL, 100, "laser task");

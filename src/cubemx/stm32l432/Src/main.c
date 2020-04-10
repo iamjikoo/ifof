@@ -73,7 +73,7 @@ void my_main(void);
 // PARAMETERS    : NULL
 // RETURNS       : NULL
 void TIM15_IRQHandler(void) {
-	HAL_TIM_IRQHandler(&htim15);
+  HAL_TIM_IRQHandler(&htim15);
 }
 
 // FUNCTION      : HAL_TIM_PeriodElapsedCallback()
@@ -83,10 +83,10 @@ void TIM15_IRQHandler(void) {
 // PARAMETERS    : htim TIM handle
 // RETURNS       : NULL
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-	if (htim->Instance == TIM15) //check if the Interrupt ha occured for TIMER 15
-	{
-		HAL_GPIO_TogglePin(Laser_Tx_GPIO_Port, Laser_Tx_Pin);
-	}
+  if (htim->Instance == TIM15) //check if the Interrupt ha occured for TIMER 15
+  {
+    HAL_GPIO_TogglePin(Laser_Tx_GPIO_Port, Laser_Tx_Pin);
+  }
 }
 
 // FUNCTION      : EXTI15_10_IRQHandler()
@@ -96,16 +96,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 // PARAMETERS    : NULL
 // RETURNS       : NULL
 void EXTI15_10_IRQHandler(void) {
-	/* USER CODE BEGIN EXTI15_10_IRQn 0 */
+  /* USER CODE BEGIN EXTI15_10_IRQn 0 */
 
-	//isLaserDetected = 1;
-	setLaserDetection(1);
+  //isLaserDetected = 1;
+  setLaserDetection(1);
 
-	/* USER CODE END EXTI15_10_IRQn 0 */
-	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
-	/* USER CODE BEGIN EXTI15_10_IRQn 1 */
+  /* USER CODE END EXTI15_10_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
+  /* USER CODE BEGIN EXTI15_10_IRQn 1 */
 
-	/* USER CODE END EXTI15_10_IRQn 1 */
+  /* USER CODE END EXTI15_10_IRQn 1 */
 }
 
 /* USER CODE END 0 */
@@ -143,36 +143,36 @@ int main(void)
   MX_TIM15_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-	HAL_TIM_Base_Start_IT(&htim15);
+  HAL_TIM_Base_Start_IT(&htim15);
 
-	HD44780_Init();									// Initialize LCD
+  HD44780_Init();  // Initialize LCD
 
-	startUpLCDSplashScreen();
+  startUpLCDSplashScreen();
 
 #if 0
-	snprintf(stringBuffer, 16, "Pulse:");// write the data to a temporary buffer array.
-	HD44780_GotoXY(0, 0);			// Move cursor to First Line First Position.
-	HD44780_PutStr(stringBuffer);				// Now write it actually to LCD.
+  snprintf(stringBuffer, 16, "Pulse:");// write the data to a temporary buffer array.
+  HD44780_GotoXY(0, 0);			// Move cursor to First Line First Position.
+  HD44780_PutStr(stringBuffer);		// Now write it actually to LCD.
 
-	snprintf(stringBuffer, 16, "Laser:");// write the data to a temporary buffer array.
-	HD44780_GotoXY(0, 1);			// Move cursor to First Line First Position.
-	HD44780_PutStr(stringBuffer);				// Now write it actually to LCD.
+  snprintf(stringBuffer, 16, "Laser:");// write the data to a temporary buffer array.
+  HD44780_GotoXY(0, 1);			// Move cursor to First Line First Position.
+  HD44780_PutStr(stringBuffer);		// Now write it actually to LCD.
 #endif
 
-	printf("\r\nStart Program\r\n");
-	my_init();
+  printf("\r\nStart Program\r\n");
+  my_init();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	while (1) {
+  while (1) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  my_main();
+    my_main();
 
-	}
+  }
   /* USER CODE END 3 */
 }
 
@@ -245,19 +245,19 @@ void SystemClock_Config(void)
 // PARAMETERS    : None
 // RETURNS       : Nothing
 void startUpLCDSplashScreen(void) {
-	char stringBuffer[16] = { 0 };// Create a temporary buffer array to hold the data.
+  char stringBuffer[16] = { 0 };// Create a temporary buffer array to hold the data.
 
-	HD44780_GotoXY(0, 0);			// Move cursor to First Line First Position.
-	snprintf(stringBuffer, 16, "CapstoneProject");	// write the data to a temporary buffer array.
-	HD44780_PutStr(stringBuffer);				// Now write it actually to LCD.
+  HD44780_GotoXY(0, 0);			// Move cursor to First Line First Position.
+  snprintf(stringBuffer, 16, "CapstoneProject");	// write the data to a temporary buffer array.
+  HD44780_PutStr(stringBuffer);				// Now write it actually to LCD.
 
-	HD44780_GotoXY(0, 1);		// Move cursor to Second Line First Position.
-	snprintf(stringBuffer, 16, "Test 1");// write the data to a temporary buffer array.
-	HD44780_PutStr(stringBuffer);				// Now write it actually to LCD.
+  HD44780_GotoXY(0, 1);		// Move cursor to Second Line First Position.
+  snprintf(stringBuffer, 16, "Test 1");// write the data to a temporary buffer array.
+  HD44780_PutStr(stringBuffer);				// Now write it actually to LCD.
 
-	HAL_Delay(2000);	// Wait for 2 Seconds let user see what this machine is.
+  HAL_Delay(2000);	// Wait for 2 Seconds let user see what this machine is.
 
-	HD44780_ClrScr();								// Clear the LCD Screen.
+  HD44780_ClrScr();								// Clear the LCD Screen.
 }
 
 /* USER CODE END 4 */
@@ -269,7 +269,7 @@ void startUpLCDSplashScreen(void) {
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-	/* User can add his own implementation to report the HAL error return state */
+  /* User can add his own implementation to report the HAL error return state */
 
   /* USER CODE END Error_Handler_Debug */
 }
