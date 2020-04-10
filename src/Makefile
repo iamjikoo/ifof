@@ -4,8 +4,9 @@
 
 # C source files for the project
 PROJ_NAME = simple_monitor
-SRCS  = 
 SRCS  = my_main.c mycode.s mytest.c 
+SRCS += hal_nrf.c radio.c aes_core.c crypto.c
+SRCS += HD44780_F3.c laser.c
 
 BUILD = build
 
@@ -70,17 +71,9 @@ SRCS      += $(CUBEMX_SRC)/main.c \
              $(CUBEMX_SRC)/spi.c \
 					   $(CUBEMX_SRC)/gpio.c \
              $(CUBEMX_SRC)/usart.c \
-						 $(CUBEMX_SRC)/HD44780_F3.c \
              $(CUBEMX_SRC)/sysmem.c \
 						 $(CUBEMX_SRC)/tim.c \
 						 $(CUBEMX_SRC)/iwdg.c \
-
-# nRF files
-SRCS      += $(CUBEMX_SRC)/nrf24/radio.c \
-             $(CUBEMX_SRC)/nrf24/hal_nrf.c \
-             $(CUBEMX_SRC)/nrf24/hal_nrf_hw.c \
-             $(CUBEMX_SRC)/nrf24/crypto.c \
-             $(CUBEMX_SRC)/nrf24/aes_core.c
 
 
 # Location of CMSIS files for our device
@@ -245,10 +238,12 @@ make_version: make_version.c
 	cc -o $@ $^
 
 clean:
-	rm -r $(BUILD)
+	@if [ -d $(BUILD) ]; then \rm -r $(BUILD); fi
+	@echo "rm -r $(BUILD)"
 	find ./ -name '*~' | xargs rm -f
 	find ./ -name '*.o' | xargs rm -f
-	rm -f deps/*.d
+	@if [ -d deps ]; then \rm -f deps/*.d; fi
+	@echo "rm -f deps/*.d"
 	rm -f .depsdir
 	rm -f $(PROJ_NAME).elf
 	rm -f $(PROJ_NAME).hex
@@ -258,4 +253,5 @@ clean:
 	rm -f $(PROJ_NAME).dfu
 	rm -f openocd.log
 	rm -f make_version
-	-rmdir deps
+	@if [ -d deps ]; then \rmdir deps; fi
+	@echo "rmdir deps"

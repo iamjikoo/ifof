@@ -50,7 +50,7 @@
 
 /* USER CODE BEGIN PV */
 
-volatile uint8_t isLaserDetected = 0;
+//volatile uint8_t isLaserDetected = 0;
 
 /* USER CODE END PV */
 
@@ -59,7 +59,10 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 
 void startUpLCDSplashScreen(void);
+void setLaserDetection(int onoff);
 
+void my_init(void);
+void my_main(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -95,7 +98,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 void EXTI15_10_IRQHandler(void) {
 	/* USER CODE BEGIN EXTI15_10_IRQn 0 */
 
-	isLaserDetected = 1;
+	//isLaserDetected = 1;
+	setLaserDetection(1);
 
 	/* USER CODE END EXTI15_10_IRQn 0 */
 	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
@@ -113,8 +117,7 @@ void EXTI15_10_IRQHandler(void) {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	uint8_t sequence = 0;
-	char stringBuffer[16] = { 0 }; // Create a temporary buffer array to hold the data.
+	//char stringBuffer[16] = { 0 }; // Create a temporary buffer array to hold the data.
   /* USER CODE END 1 */
   
 
@@ -142,22 +145,22 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	HAL_TIM_Base_Start_IT(&htim15);
 
-#if 0
 	HD44780_Init();									// Initialize LCD
 
 	startUpLCDSplashScreen();
 
-	HD44780_GotoXY(0, 0);			// Move cursor to First Line First Position.
+#if 0
 	snprintf(stringBuffer, 16, "Pulse:");// write the data to a temporary buffer array.
+	HD44780_GotoXY(0, 0);			// Move cursor to First Line First Position.
 	HD44780_PutStr(stringBuffer);				// Now write it actually to LCD.
 
-	HD44780_GotoXY(0, 1);			// Move cursor to First Line First Position.
 	snprintf(stringBuffer, 16, "Laser:");// write the data to a temporary buffer array.
+	HD44780_GotoXY(0, 1);			// Move cursor to First Line First Position.
 	HD44780_PutStr(stringBuffer);				// Now write it actually to LCD.
 #endif
 
 	printf("\r\nStart Program\r\n");
-	radio_init();        // Initialize radio channel
+	my_init();
 
   /* USER CODE END 2 */
 
@@ -167,40 +170,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
-		if (isLaserDetected) {
-			HD44780_GotoXY(7, 1);	// Move cursor to First Line First Position.
-			snprintf(stringBuffer, 16, "Detected");	// write the data to a temporary buffer array.
-			HD44780_PutStr(stringBuffer);		// Now write it actually to LCD.
-
-			/*
-			 insert your code for transmitting data using nRF module
-			 here.
-			 */
-			snprintf(stringBuffer, sizeof(stringBuffer), "%s-%d", "Detected", sequence);
-	    radio_send_data(stringBuffer, strlen(stringBuffer));
-
-			isLaserDetected = 0;
-		} else {
-			HD44780_GotoXY(7, 1);	// Move cursor to First Line First Position.
-			snprintf(stringBuffer, 16, "        ");	// write the data to a temporary buffer array.
-			HD44780_PutStr(stringBuffer);
-		}
-
-		HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_SET);
-
-		/* send data into nRF for just debugging */
-	  snprintf(stringBuffer, sizeof(stringBuffer), "%s-%d", "Detected", sequence++);
-	  printf("tx=%s\r\n", stringBuffer);
-	  radio_send_data(stringBuffer, strlen(stringBuffer));
-
-		/* receive data from nRF */
-	  int len = radio_recv_data(stringBuffer, sizeof(stringBuffer));
-		if (len) {
-			printf("rx=%s\r\n", stringBuffer);
-		}
-
-		HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_RESET);
+	  my_main();
 
 	}
   /* USER CODE END 3 */
@@ -320,5 +290,6 @@ void assert_failed(char *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

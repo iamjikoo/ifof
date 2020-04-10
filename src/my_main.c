@@ -61,5 +61,5 @@ ParserReturnVal_t CmdLed(int mode)
 
 ADD_CMD("led",CmdLed,"0 | 1           Control LED")
 
-extern void rfReadingPacket();
-ADD_TASK(rfReadingPacket, NULL, NULL, 100, "receive rf data");
+//extern void rfReadingPacket();
+//ADD_TASK(rfReadingPacket, NULL, NULL, 100, "receive rf data");

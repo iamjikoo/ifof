@@ -46,9 +46,8 @@ void MX_SPI1_Init(void)
   hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
   if (HAL_SPI_Init(&hspi1) != HAL_OK)
   {
-    //Error_Handler();
+    Error_Handler();
   }
-	printf("A\r\n");
 
 }
 
@@ -76,7 +75,6 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-	  printf("B\r\n");
 
   /* USER CODE BEGIN SPI1_MspInit 1 */
 

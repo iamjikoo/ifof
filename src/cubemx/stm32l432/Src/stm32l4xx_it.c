@@ -52,7 +52,8 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+void my_Tick(void);
+void TaskingTickHandler(void);
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -186,7 +187,8 @@ void SysTick_Handler(void)
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
-
+  my_Tick();
+  TaskingTickHandler();
   /* USER CODE END SysTick_IRQn 1 */
 }
 
