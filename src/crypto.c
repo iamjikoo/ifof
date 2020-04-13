@@ -5,11 +5,15 @@
 
 #include "aes_local.h"
 
+#include "common.h"
+
 #define MIN(x,y) (((x)>(y))?(y):(x))
 #define MAX(x,y) (((x)>(y))?(x):(y))
 
 #define AES256_KEY "conestoga.capstone.team7.ifof."
 #define AES_BLOCK_SIZE	16
+
+char crypto_enable  = 0; /* crypto enable */
 
 /*
 ** AES-256 encrypt
@@ -78,3 +82,45 @@ int aes256_dec( unsigned char *crypt, int crypt_len, char *plain)
 	//* Return the plain length.
 	return (offset-pad);
 }
+
+
+
+ParserReturnVal_t CmdCrypto(int mode)
+{
+  uint16_t rc;
+	char *para;
+  
+  if(mode != CMD_INTERACTIVE) return CmdReturnOk;
+
+  rc = fetch_string_arg(&para);
+  if(rc) {
+    printf("Please enter string\r\n");
+    return CmdReturnBadParameter1;
+  }
+
+	char str[1024];
+	unsigned char crypt[1024];
+
+	snprintf(str, sizeof(str), para);
+
+	char level = getLogLevel(3);
+	setLogLevel(3);
+	hexDump("crypto_input", str, strlen(str));
+
+  int clen = aes256_enc((unsigned char*)str, strlen(str), crypt, sizeof(crypt));
+
+	hexDump("crypto_enc", crypt, clen);
+
+	char decstr[1024];
+
+	int slen = aes256_dec(crypt, clen, decstr);
+
+	hexDump("crypto_dec", decstr, slen);
+	setLogLevel(level);
+
+	printf("\r\nlen=%d out=(%s)\n", slen, decstr);
+	
+  return CmdReturnOk;
+}
+
+ADD_CMD("crypto",CmdCrypto,"<message>       Crypt test")

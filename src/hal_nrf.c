@@ -20,8 +20,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "main.h"
+//#include "main.h"
 #include "spi.h"
+#include "common.h"
 
 #include "nordic_common.h"
 #include "hal_nrf.h"
@@ -44,7 +45,7 @@ uint8_t hal_nrf_rw(uint8_t value)
   errcode = HAL_SPI_TransmitReceive(&hspi1, &value, &RxData, 1, 1000);
   //HAL_SPI_TransmitReceive(&hspi1, &value, &RxData, 1, 1000);
 	if (errcode) { 
-    printf("tx:%02X, rx:%02X (err:%d) s:%d e:%ld\r\n", value, RxData, errcode, 
+    LOG(1, "tx:%02X, rx:%02X (err:%d) s:%d e:%ld\r\n", value, RxData, errcode, 
 			HAL_SPI_GetState(&hspi1), HAL_SPI_GetError(&hspi1));
 	}
 

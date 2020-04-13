@@ -6,47 +6,86 @@
 
 #include "hal_nrf.h"
 
+/** Defines the payload length the radio should use */
+#define RF_PAYLOAD_LENGTH 32                           
+
 /*******************************************************/
 //	rfPDU type 
 /*
 	 |<------------- 32 bytes ----------------->|
-	   1B        16B     1B       14B
+	   1B        mlen | 14B           16 B
 	 +--------+--------+--------+---------------+
-	 | opcode |  id    | length | message       |
+	 | opcode |  len  | id       | message       |
 	 +--------+--------+----+-------------------+ */
 
 typedef struct {
-	uint8_t opcode; // command type
+	uint8_t opcode:4; // command type
 #define OP_COMMAND	1
 #define OP_RELAY    2
-	char    id[16]; // device id
+	uint8_t crypto:1; // 1:enable 0; disable 
+	uint8_t reserved1:1; 
+	uint8_t reserved2:2;
+	char    id[14]; // device id
 	uint8_t length; // length of the message
-	char    message[14]; // message contents
+	char    message[16]; // message contents
 } rfPDU_t;
+
+
+typedef struct {
+  char auto_manual;  
+#define RF_OPER_AUTO   0
+#define RF_OPER_MANUAL 1 
+#define RF_OPER_DEFAULT RF_OPER_AUTO
+
+  char log_level;  /* log level */
+	char dev_id[5]; /* device id */
+
+	char crypto_enable; 
+#define RF_CRYPTO_OFF 0
+#define RF_CRYPTO_ON  1 
+//#define RF_CRYPTO_DEFAULT RF_CRYPTO_ON
+#define RF_CRYPTO_DEFAULT RF_CRYPTO_OFF
+
+} radio_info_t;
+
+radio_info_t *pRF; // global variable
 
 /*******************************************************/
 
 static const uint8_t address[HAL_NRF_AW_5BYTES] = {0x22,0x33, 0x44,0x55,0x01};
-char device_id[16] = {"OF1_123_456_789"};
-int fRfReading= 0;
+char device_id[14] = {"OF1_123_456_7"};
+//int fRfReading= 0;
+
+
+bool is_crypto_on()
+{
+  return (pRF? pRF->crypto_enable:0);
+}
+
+void crypto_onoff(int en)
+{
+	pRF->crypto_enable = en;
+}
 
 static radio_status_t status;
 
+#if 0
 uint32_t deviceID()
 {
    uint32_t firstBit= 0;
    firstBit = HAL_GetUIDw0();
    printf(".FIRTBIT VAL - %04lx\n", firstBit);
 
-	 //printf("halver=%lx\n", HAL_GetHalVersion());
-	 //printf("hal_RevId=%lx\n", HAL_GetREVID());
-	 //printf("hal_DevId=%lx\n", HAL_GetDEVID());
+	 printf("halver=%lx\n", HAL_GetHalVersion());
+	 printf("hal_RevId=%lx\n", HAL_GetREVID());
+	 printf("hal_DevId=%lx\n", HAL_GetDEVID());
 	 printf("hal_UIDw0=%lx\n", HAL_GetUIDw0());
 	 printf("hal_UIDw1=%lx\n", HAL_GetUIDw1());
 	 printf("hal_UIDw2=%lx\n", HAL_GetUIDw2());
 
    return firstBit;
 }
+#endif
 
 void radio_set_status (radio_status_t new_status)
 {
@@ -71,12 +110,12 @@ void radio_init_mode(const uint8_t *address, hal_nrf_operation_mode_t operationa
 
   if(operational_mode == HAL_NRF_PTX) {          // Mode depentant settings
     hal_nrf_set_operation_mode(HAL_NRF_PTX);     // Enter TX mode
-		printf("nRF: TX mode\r\n");
+		LOG(1, "nRF TX mode");
   } else {
-		int pload = 32;
+		int pload = RF_PAYLOAD_LENGTH;
     hal_nrf_set_operation_mode(HAL_NRF_PRX);     // Enter RX mode
     hal_nrf_set_rx_pload_width((uint8_t)HAL_NRF_PIPE0, pload);
-		printf("nRF: RX mode, pload=%d\r\n", pload);
+		LOG(1, "nRF RX mode, pload=%d", pload);
                                                  // Pipe0 expect 
                                                  // PAYLOAD_LENGTH byte payload
                                                  // PAYLOAD_LENGTH in radio.h
@@ -100,57 +139,89 @@ void radio_init_mode(const uint8_t *address, hal_nrf_operation_mode_t operationa
   } else {
     CE_LOW();
 	}
+
+  //deviceID();
+
 }
 
 void radio_set_rx_mode(void)
 {
-  hal_nrf_set_operation_mode(HAL_NRF_PRX);
-  hal_nrf_set_rx_pload_width((uint8_t)HAL_NRF_PIPE0, 32);
+	uint8_t mode = hal_nrf_get_operation_mode();
+
+	if (mode != HAL_NRF_PRX) {
+    hal_nrf_set_operation_mode(HAL_NRF_PRX);
+    hal_nrf_set_rx_pload_width((uint8_t)HAL_NRF_PIPE0, 32);
+		LOG(1, "nRF mode:tx->%s",(hal_nrf_get_operation_mode())?"rx":"tx");
+	}
   CE_HIGH();
 }
 
 void radio_set_tx_mode(void)
 {
-  hal_nrf_set_operation_mode(HAL_NRF_PTX);
+	uint8_t mode = hal_nrf_get_operation_mode();
+
+  if (mode != HAL_NRF_PTX) {
+    hal_nrf_set_operation_mode(HAL_NRF_PTX);
+		LOG(1, "nRF mode:rx->%s",(hal_nrf_get_operation_mode())?"rx":"tx");
+	}
   CE_LOW();
 }
 
-void radio_init() 
+void radio_init()
 {
+  /* init RF variables */
+  pRF = (radio_info_t *)malloc(sizeof(radio_info_t));
+
+	pRF->auto_manual = RF_OPER_DEFAULT;
+	pRF->log_level = 0;
+	pRF->crypto_enable = RF_CRYPTO_DEFAULT;
+
   radio_init_mode(address, HAL_NRF_PRX); /* set default mode */
 }
 
 int radio_send_data(char *data, uint8_t length) 
 {
 
-  CE_LOW();
+	if (length >= 16) {
+	  LOG(0, "length is limited to max 15 bytes");
+		length = 15; /* adjust length */
+	}
 
 	/* set rf mode to tx */
-
-	if (hal_nrf_get_operation_mode() != HAL_NRF_PTX) {
-    radio_set_tx_mode();
-		printf("changed mode: %d -> %d\r\n", hal_nrf_get_operation_mode(), HAL_NRF_PTX);
-	}
+  radio_set_tx_mode();
+  CE_LOW();
 
 	/* build packet */
 	rfPDU_t data_tx;
+	memset(&data_tx, 0x00, sizeof(data_tx));
 
 	data_tx.opcode = 1;
-	sprintf(data_tx.id, device_id);
-	data_tx.length = length;
 
-	for (int i = 0; i < 14; i++) {
-    if (i >= length) {
-		  data_tx.message[i] = ' '; // enter space
-		} else {
-      data_tx.message[i] = data[i];
-		}
+	sprintf(data_tx.id, device_id);
+
+	/* crypto data */
+	unsigned char enc[128];
+	int  enclen;
+	if (is_crypto_on()) {
+		enclen = aes256_enc((unsigned char*)data, length, enc, sizeof(enc));
+		hexDump("crypto_enc", enc, enclen);
+		data_tx.crypto = 1;
+	  data_tx.length = enclen;
+		memcpy(data_tx.message, enc, enclen);
+		//ptx = (const char *)enc;
+	} else {
+		data_tx.crypto = 0;
+	  data_tx.length = length;
+		memcpy(data_tx.message, data, length);
+		//ptx = (const char *)data;
 	}
 
-	hal_nrf_write_tx_pload((uint8_t*)&data_tx, 32);
+	hexDump("radio_send", (const void*)&data_tx, sizeof(data_tx));
+
+	hal_nrf_write_tx_pload((uint8_t*)&data_tx, RF_PAYLOAD_LENGTH);
 	CE_PULSE();
 
-	printf("\r\nsend to (%s) len(%d) msg(%s)\n\r", data_tx.id, length, data);
+	LOG(1, "send to(%s) c(%d) len(%d) msg(%s)", data_tx.id, data_tx.crypto, length, data);
 
 	return length;
 }
@@ -164,62 +235,65 @@ static uint16_t _radio_recv_packet(uint8_t *packet)
    return payload_length;
 }
 
-#if 0
-int radio_is_active() {
-   if( (reg = hal_nrf_get_rx_data_source()) < 7)
-}
-#endif
-
-int radio_recv_data(char *rdata, uint8_t length)
+int radio_recv_data(char *rdata, uint8_t rsize)
 {
 
 	uint8_t buffer[32];
 
-  rfPDU_t *pRf;
-
-  CE_HIGH();
+  rfPDU_t *pRx;
 
   /* set rf mode to rx */
-	if (hal_nrf_get_operation_mode() != HAL_NRF_PRX) {
-    radio_set_rx_mode();
-	}
+  radio_set_rx_mode();
 
-  length = _radio_recv_packet((uint8_t*)buffer);
-	if (length > 0) {
+  int nread = _radio_recv_packet((uint8_t*)buffer);
+	if (nread > 0) {
+		printf("nread=%d\n", nread);
 
-#if 1 
-	  /* parse packet */
-		printf("Data in hex:\n");
-		for (uint8_t i = 1; i <= length; i++){
-				printf("%02X  ", buffer[i-1]);
-				if (i % 16 == 0) printf("\n");
+		hexDump("radio_recv", buffer, nread);
+
+		/* parse pasckt */
+		pRx = (rfPDU_t *)buffer;
+
+		char dec[256];
+		char *pRDATA;
+		int  len;
+
+		if (pRx->crypto) {
+			len = aes256_dec((unsigned char *)pRx->message, pRx->length, dec);
+	    hexDump("crypto_dec", dec, len);
+			pRDATA = dec;
+		} else {
+			len = pRx->length;
+			pRDATA = pRx->message;
 		}
-		printf("\n");
-#endif
 
-		pRf = (rfPDU_t *)buffer;
-
-		printf("id=%s op=%d msg=", pRf->id, pRf->opcode);
 		int i;
-		for (i = 0; i < pRf->length && i < length; i++) {
-			printf("%c", pRf->message[i]);
+		for (i = 0; i < len && i < rsize; i++) {
+		  rdata[i] = pRDATA[i];
+		}
+		rdata[i] = '\0';
+
+#if 0
+		int i;
+		for (i = 0; i < pRf->length && i < rsize; i++) {
 			rdata[i] = pRf->message[i];
 		}
 		rdata[i] = '\0';
-		printf("\n");
-		//printf("Data Received - %s\n", rxData_P);
-	  return pRf->length;
+#endif
+
+		LOG(1, "recv fr(%s) len(%d) msg(%s)", pRx->id, len, rdata);
+
+	  //return pRf->length;
+	  return len;
 	}
 
 	return 0;
 }
 
-void radio_run(void *data)
+void radio_run()
 {
-	return;
-
-	//if (!fRfReading)
-	//	return;
+	if (pRF->auto_manual == RF_OPER_MANUAL) 
+		return;
 
 	char buffer[32];
 
@@ -227,6 +301,7 @@ void radio_run(void *data)
 }
 ADD_TASK(radio_run, radio_init, NULL, 1000, "nrf module task");
 
+#if 0
 ParserReturnVal_t CmdStop(int mode)
 {
   if(mode != CMD_INTERACTIVE) return CmdReturnOk;
@@ -236,6 +311,7 @@ ParserReturnVal_t CmdStop(int mode)
 	return CmdReturnOk;
 }
 ADD_CMD("q",CmdStop,"quit receive packet")
+#endif
 
 #if 0
 ParserReturnVal_t CmdReadReg(int mode)
@@ -353,7 +429,7 @@ ParserReturnVal_t CmdRadio(int mode)
 
   } else if (strcasecmp(subCommand, "reg")==0) {
   } else if (strcasecmp(subCommand, "recv")==0) {
-    fRfReading = 1;
+    //fRfReading = 1;
   } else if (strcasecmp(subCommand, "send")==0) {
 
     char rc, *data;
@@ -367,8 +443,8 @@ ParserReturnVal_t CmdRadio(int mode)
 
     length = strlen(data);
 
-		if (length > 14) {
-			printf("Message too long: limited to 14 bytes\n");
+		if (length > 20) {
+			printf("Message too long: limited to 20 bytes\n");
       return CmdReturnBadParameter3;
 		}
 
@@ -433,25 +509,46 @@ ParserReturnVal_t CmdRadio(int mode)
 
 	/* show command */
   } else if (strcasecmp(subCommand, "show")==0) {
-		int mode = hal_nrf_get_operation_mode();
+   	int mode = hal_nrf_get_operation_mode();
 
 		printf("\n");
-		printf("----------------+-----------------------\n");
-	  printf(" Operation Mode | %s\n", (mode==HAL_NRF_PRX)? "RX":"TX");
-		//printf(" Payload length | %d bytes\n", hal_nrf_read_rx_pl_w());
-		printf(" Payload length | %d bytes\n",
+		printf("-------------------+------------------------------------\n");
+	  printf(" Operational  Mode | %s\n", (mode==HAL_NRF_PRX)? "RX":"TX");
+	  printf(" Transmission Mode | %s\n", (mode==HAL_NRF_PRX)? "RX":"TX");
+		//printf(" Payload length  | %d bytes\n", hal_nrf_read_rx_pl_w());
+		printf(" Payload length    | %d bytes\n",
 				hal_nrf_get_rx_pload_width(HAL_NRF_PIPE0));
-		printf(" ID             | %s\n", device_id);
-		printf("----------------+-----------------------\n");
+		printf(" ID                | %s\n", device_id);
+		printf(" Encryption        | %s\n", (is_crypto_on()?"yes (aes256)":"no"));
+		printf("-------------------+------------------------------------\n");
+  } else if (strcasecmp(subCommand, "neighbour")==0) {
 
   } else if (strcasecmp(subCommand, "enc")==0) {
+		char *para;
+		
+		rc = fetch_string_arg(&para);
+		if(rc) {
+			printf("Please set on | off\r\n");
+			return CmdReturnBadParameter2;
+		}
 
-  } else {
-    printf("Command '%s' not found.\n", subCommand);
-    return CmdReturnOk;
-  }
+		if (strcasecmp(para, "on")==0) {
+			crypto_onoff(RF_CRYPTO_ON);
+		} else if (strcasecmp(para, "off")==0) {
+			crypto_onoff(RF_CRYPTO_OFF);
+		} else {
+			printf("Invalid options '%s'", para);
+			return CmdReturnBadParameter2;
+		}
 
-  return CmdReturnOk;
+		return CmdReturnOk;
+
+	} else {
+		printf("Command '%s' not found.\n", subCommand);
+		return CmdReturnOk;
+	}
+
+	return CmdReturnOk;
 }
 
 ADD_CMD("rf",CmdRadio,"                Set and show rf module")

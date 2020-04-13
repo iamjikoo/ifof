@@ -5,8 +5,8 @@
 # C source files for the project
 PROJ_NAME = simple_monitor
 SRCS  = my_main.c mycode.s mytest.c 
-SRCS += hal_nrf.c radio.c aes_core.c crypto.c
-SRCS += HD44780_F3.c laser.c
+SRCS += hal_nrf.c radio.c aes_core.c crypto.c misc.c
+SRCS += HD44780_F3.c laser.c pulse.c
 
 BUILD = build
 
@@ -68,6 +68,8 @@ SRCS      += $(CUBEMX_SRC)/main.c \
              $(CUBEMX_SRC)/$(HAL_PREFIX)_it.c \
              $(CUBEMX_SRC)/$(HAL_PREFIX)_hal_msp.c \
              $(CUBEMX_SRC)/system_$(HAL_PREFIX).c \
+             $(CUBEMX_SRC)/adc.c \
+             $(CUBEMX_SRC)/dma.c \
              $(CUBEMX_SRC)/spi.c \
 					   $(CUBEMX_SRC)/gpio.c \
              $(CUBEMX_SRC)/usart.c \
@@ -86,6 +88,8 @@ CMSIS_DEV_SRC = $(CMSIS_DEV)/Source/Templates
 HAL_INC = $(HAL)/Inc
 HAL_SRC = $(HAL)/Src
 SRCS   += $(HAL_SRC)/$(HAL_PREFIX)_hal.c \
+          $(HAL_SRC)/$(HAL_PREFIX)_hal_adc.c \
+          $(HAL_SRC)/$(HAL_PREFIX)_hal_adc_ex.c \
           $(HAL_SRC)/$(HAL_PREFIX)_hal_cortex.c \
           $(HAL_SRC)/$(HAL_PREFIX)_hal_dma.c \
           $(HAL_SRC)/$(HAL_PREFIX)_hal_dma_ex.c \

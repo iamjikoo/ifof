@@ -3,7 +3,7 @@
  *  Common include file
  */
 #ifndef __COMMON_H
-#define __COMON_H
+#define __COMMON_H
 
 #include <stdint.h>
 #include <time.h>
@@ -167,7 +167,24 @@ void my_Init(void);
 void timerInit(void);
 void timerDelay(uint16_t delayVal);
 
+/* trace function */
+extern char log_level; // JIKOO
+#define LOG(level, fmt, args...) \
+	do { if (level <= log_level) printf("\r\nLOG: "fmt, ##args);} while(0)
 
+/* misc */
+void hexDump(const char *desc, const void* data, int len);
+uint8_t getLogLevel();
+uint8_t setLogLevel(int level);
+
+
+/* enc */
+void setCryptoOn(); 
+void setCryptoOff();
+
+/* crypto */
+int aes256_enc( unsigned char *plain, int plain_len, unsigned char *crypt, int crypt_len);
+int aes256_dec( unsigned char *crypt, int crypt_len, char *plain);
 
 #endif
 

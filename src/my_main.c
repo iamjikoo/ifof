@@ -9,6 +9,7 @@
 /* This include will give us the CubeMX generated defines */
 #include "main.h"
 
+
 /* This function is called from the CubeMX generated main.c, after all
  * the HAL peripherals have been initialized. */
 void my_init(void)
@@ -58,8 +59,4 @@ ParserReturnVal_t CmdLed(int mode)
   
   return CmdReturnOk;
 }
-
 ADD_CMD("led",CmdLed,"0 | 1           Control LED")
-
-//extern void rfReadingPacket();
-//ADD_TASK(rfReadingPacket, NULL, NULL, 100, "receive rf data");

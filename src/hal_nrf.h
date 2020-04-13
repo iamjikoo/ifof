@@ -19,8 +19,8 @@
  * HAL interface for Nordic Semiconductor's radio chip.
  */
 
-#ifndef HAL_NRF_H__
-#define HAL_NRF_H__
+#ifndef __HAL_NRF_H__
+#define __HAL_NRF_H__
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -610,7 +610,7 @@ void hal_nrf_write_multibyte_reg(const uint8_t reg, const uint8_t *pbuf, uint8_t
 
 
 //@}
-#endif // HAL_NRF_H__
+#endif // __HAL_NRF_H__
 /** 
 @} 
 @} */

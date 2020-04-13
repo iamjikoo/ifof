@@ -115,3 +115,26 @@ int _open_r (struct _reent *ptr, const char *name,
 {
   return -1;
 }
+
+
+// JIKOO 
+int _kill(int pid, int sig)
+{
+  errno = EINVAL;
+  return -1;
+}
+
+int _getpid(void)
+{
+  return 1;
+}
+
+void _exit (int status)
+{
+  _kill(status, -1);
+  while (1) {}    /* Make sure we hang here */
+}
+
+
+//JIKOO
+

@@ -9,6 +9,7 @@
 
 #include "common.h"
 
+#if 0
 int mytest( int x );
 
 ParserReturnVal_t CmdTest(int action)
@@ -28,7 +29,7 @@ ParserReturnVal_t CmdTest(int action)
 }
 
 ADD_CMD("cmdtest",CmdTest,"Test C to asm")
-
+#endif
 
 // simple function that toggles the USR LED the STM Nucleo64 board
 void USR_LED_Toggle( void )

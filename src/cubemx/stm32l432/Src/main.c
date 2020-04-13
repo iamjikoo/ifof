@@ -20,6 +20,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
+#include "dma.h"
+#include "iwdg.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
@@ -63,10 +66,15 @@ void setLaserDetection(int onoff);
 
 void my_init(void);
 void my_main(void);
+
+void pulse_process(uint32_t tempSignal);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+#define NUM_OF_SAMPLES 4096
+uint16_t sampleMeasured[NUM_OF_SAMPLES];
 
 // FUNCTION      : TIM15_IRQHandler()
 // DESCRIPTION   : It is an ISR which is executed whenever Interrupt is generated from Timer 15
@@ -86,7 +94,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   if (htim->Instance == TIM15) //check if the Interrupt ha occured for TIMER 15
   {
     HAL_GPIO_TogglePin(Laser_Tx_GPIO_Port, Laser_Tx_Pin);
-  }
+	} else if (htim->Instance == TIM2) { //check if the Interrupt has occured for TIMER 2
+		static uint32_t timeTick = 0;
+		if (timeTick < 1000 /* 1000ms */) {
+			timeTick++;
+		} else {
+			timeTick = 0;
+      HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+		}
+	}
 }
 
 // FUNCTION      : EXTI15_10_IRQHandler()
@@ -139,15 +155,21 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART2_UART_Init();
   MX_TIM15_Init();
   MX_SPI1_Init();
+  MX_ADC1_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim15);
+  HAL_TIM_Base_Start_IT(&htim2);
 
   HD44780_Init();  // Initialize LCD
 
   startUpLCDSplashScreen();
+
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)sampleMeasured, NUM_OF_SAMPLES);
 
 #if 0
   snprintf(stringBuffer, 16, "Pulse:");// write the data to a temporary buffer array.
@@ -163,6 +185,8 @@ int main(void)
   my_init();
 
   /* USER CODE END 2 */
+ 
+ 
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -192,8 +216,10 @@ void SystemClock_Config(void)
   __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_LOW);
   /** Initializes the CPU, AHB and APB busses clocks 
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_LSE
+                              |RCC_OSCILLATORTYPE_MSI;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.MSIState = RCC_MSI_ON;
   RCC_OscInitStruct.MSICalibrationValue = 0;
   RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_6;
@@ -221,8 +247,16 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_ADC;
   PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+  PeriphClkInit.AdcClockSelection = RCC_ADCCLKSOURCE_PLLSAI1;
+  PeriphClkInit.PLLSAI1.PLLSAI1Source = RCC_PLLSOURCE_MSI;
+  PeriphClkInit.PLLSAI1.PLLSAI1M = 1;
+  PeriphClkInit.PLLSAI1.PLLSAI1N = 8;
+  PeriphClkInit.PLLSAI1.PLLSAI1P = RCC_PLLP_DIV7;
+  PeriphClkInit.PLLSAI1.PLLSAI1Q = RCC_PLLQ_DIV2;
+  PeriphClkInit.PLLSAI1.PLLSAI1R = RCC_PLLR_DIV2;
+  PeriphClkInit.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_ADC1CLK;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
@@ -260,6 +294,29 @@ void startUpLCDSplashScreen(void) {
   HD44780_ClrScr();								// Clear the LCD Screen.
 }
 
+#if 0
+// Called when first half of buffer is filled
+void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc) {
+}
+#endif
+
+// Called when buffer is completely filled
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
+
+#if 0
+	uint32_t sum = 0;
+	uint32_t avgMeasured = 0;
+
+	for (int i = 0; i < NUM_OF_SAMPLES; i++) {
+		sum = sum + sampleMeasured[i];
+	}
+	avgMeasured = sum/NUM_OF_SAMPLES;
+  //printf("%lx(%li)\n", avgMeasured, avgMeasured);
+	//pulse_process(avgMeasured);
+#endif
+
+}
+
 /* USER CODE END 4 */
 
 /**
@@ -290,6 +347,5 @@ void assert_failed(char *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
