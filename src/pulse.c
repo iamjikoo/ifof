@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "main.h"
+#include "HD44780.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -35,8 +36,9 @@ volatile uint8_t Pulse = FALSE; // "True" when User's live heartbeat is detected
 
 volatile uint8_t QS = FALSE; // becomes true when finds a beat.
 
-
 uint16_t adcAvgValue = 0;
+
+char stringBuffer[16] = {0,};
 
 void calculate_heart_beat(uint16_t val) {
 
@@ -122,19 +124,41 @@ void calculate_heart_beat(uint16_t val) {
 	}
 }
 
-void pulse_init(void *data)
-{
 
+void lcdPrintPulse(const char* str)
+{
+  static char prev[16]={0,};
+
+  if (strcmp(prev, str) !=0) {
+    HD44780_GotoXY(6, 0); // Move cursor to First Line First Position.
+    HD44780_PutStr((char*)str);   // Now write it actually to LCD.
+    snprintf(prev, sizeof(prev), "%s", str);
+  }
 }
 
-void pulse_run(void *data)
+void lcdClearPulse()
 {
+  const char *empty = "     ";
+  lcdPrintPulse(empty);
+}
+
+void pulse_init(void *data)
+{
+    
+}
+
+void pulse_run(void) // *data)
+{
+
   if (QS == TRUE) {
 		  // A Heartbeat Was Found, BPM and IBI have been Determined
 		  // Quantified Self "QS" true when we find a heartbeat
 		  QS = FALSE; // reset the Quantified Self flag for next time
-		  printf("IBI: %d \tBPM: %d \n\r",IBI,BPM);
+		  //printf("IBI: %d \tBPM: %d \n\r",IBI,BPM);
+		  snprintf(stringBuffer, sizeof(stringBuffer), " %d", BPM);
+		  lcdPrintPulse(stringBuffer);
 	  }
 }
 
-ADD_TASK(pulse_run, pulse_init, NULL, 10, "pulse task");
+
+//ADD_TASK(pulse_run, pulse_init, NULL, 10, "pulse task");
