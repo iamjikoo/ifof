@@ -106,7 +106,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 void EXTI15_10_IRQHandler(void) {
   /* USER CODE BEGIN EXTI15_10_IRQn 0 */
 
-  //isLaserDetected = 1;
   setLaserDetection(1);
 
   /* USER CODE END EXTI15_10_IRQn 0 */
@@ -162,7 +161,6 @@ int main(void)
   HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&adc_buffer, 1);
   HAL_TIM_Base_Start_IT(&htim2);
 
-  printf("\r\nStart Program\r\n");
   my_init();
 
   /* USER CODE END 2 */
@@ -263,16 +261,25 @@ void startUpLCDSplashScreen(void) {
   char stringBuffer[16] = { 0 };// Create a temporary buffer array to hold the data.
 
   HD44780_GotoXY(0, 0);			// Move cursor to First Line First Position.
-  snprintf(stringBuffer, 16, "CapstoneProject");	// write the data to a temporary buffer array.
+  snprintf(stringBuffer, 16, "     IFF for");	// write the data to a temporary buffer array.
   HD44780_PutStr(stringBuffer);				// Now write it actually to LCD.
 
   HD44780_GotoXY(0, 1);		// Move cursor to Second Line First Position.
-  snprintf(stringBuffer, 16, "Test 1");// write the data to a temporary buffer array.
+  snprintf(stringBuffer, 16, " Infantry V1.1");// write the data to a temporary buffer array.
   HD44780_PutStr(stringBuffer);				// Now write it actually to LCD.
 
   HAL_Delay(2000);	// Wait for 2 Seconds let user see what this machine is.
 
   HD44780_ClrScr();								// Clear the LCD Screen.
+  
+  snprintf(stringBuffer, 16, "Pulse:      BPM");// write the data to a temporary buffer array.
+  HD44780_GotoXY(0, 0);     // Move cursor to First Line First Position.
+  HD44780_PutStr(stringBuffer);       // Now write it actually to LCD.
+
+  //snprintf(stringBuffer, 16, "Laser:");// write the data to a temporary buffer array.
+  //HD44780_GotoXY(0, 1);     // Move cursor to First Line First Position.
+  //HD44780_PutStr(stringBuffer);       // Now write it actually to LCD.
+  
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
@@ -281,22 +288,10 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 
 	calculate_heart_beat(adc_buffer[0]);
 	/* Write to LED */
-	//HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_RESET);
-	//data_ready = 1;
-
+	
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&adc_buffer, 1);
 	HAL_TIM_Base_Start_IT(&htim2);
 }
-
-//void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc){
-//  /* Toggle LED */
-//  for (int i = 0; i < 5; i++) {
-//    adc_buffer[i] = 999;
-//    tmp[i] = adc_buffer[i];
-//  }
-
-//  //HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_SET);
-//}
 
 /* USER CODE END 4 */
 
