@@ -174,6 +174,7 @@ extern char log_level; // JIKOO
 
 /* misc */
 void hexDump(const char *desc, const void* data, int len);
+
 uint8_t getLogLevel();
 uint8_t setLogLevel(int level);
 

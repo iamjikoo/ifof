@@ -55,6 +55,8 @@
 
 //volatile uint8_t isLaserDetected = 0;
 
+volatile uint16_t adc_buffer[5] = {0};
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -67,14 +69,12 @@ void setLaserDetection(int onoff);
 void my_init(void);
 void my_main(void);
 
-void pulse_process(uint32_t tempSignal);
+void calculate_heart_beat(uint16_t val);
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-#define NUM_OF_SAMPLES 4096
-uint16_t sampleMeasured[NUM_OF_SAMPLES];
 
 // FUNCTION      : TIM15_IRQHandler()
 // DESCRIPTION   : It is an ISR which is executed whenever Interrupt is generated from Timer 15
@@ -94,15 +94,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   if (htim->Instance == TIM15) //check if the Interrupt ha occured for TIMER 15
   {
     HAL_GPIO_TogglePin(Laser_Tx_GPIO_Port, Laser_Tx_Pin);
-	} else if (htim->Instance == TIM2) { //check if the Interrupt has occured for TIMER 2
-		static uint32_t timeTick = 0;
-		if (timeTick < 1000 /* 1000ms */) {
-			timeTick++;
-		} else {
-			timeTick = 0;
-      HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-		}
-	}
+	} 
 }
 
 // FUNCTION      : EXTI15_10_IRQHandler()
@@ -133,7 +125,6 @@ void EXTI15_10_IRQHandler(void) {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	//char stringBuffer[16] = { 0 }; // Create a temporary buffer array to hold the data.
   /* USER CODE END 1 */
   
 
@@ -163,23 +154,13 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim15);
-  HAL_TIM_Base_Start_IT(&htim2);
 
   HD44780_Init();  // Initialize LCD
 
   startUpLCDSplashScreen();
 
-	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)sampleMeasured, NUM_OF_SAMPLES);
-
-#if 0
-  snprintf(stringBuffer, 16, "Pulse:");// write the data to a temporary buffer array.
-  HD44780_GotoXY(0, 0);			// Move cursor to First Line First Position.
-  HD44780_PutStr(stringBuffer);		// Now write it actually to LCD.
-
-  snprintf(stringBuffer, 16, "Laser:");// write the data to a temporary buffer array.
-  HD44780_GotoXY(0, 1);			// Move cursor to First Line First Position.
-  HD44780_PutStr(stringBuffer);		// Now write it actually to LCD.
-#endif
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&adc_buffer, 1);
+  HAL_TIM_Base_Start_IT(&htim2);
 
   printf("\r\nStart Program\r\n");
   my_init();
@@ -252,7 +233,7 @@ void SystemClock_Config(void)
   PeriphClkInit.AdcClockSelection = RCC_ADCCLKSOURCE_PLLSAI1;
   PeriphClkInit.PLLSAI1.PLLSAI1Source = RCC_PLLSOURCE_MSI;
   PeriphClkInit.PLLSAI1.PLLSAI1M = 1;
-  PeriphClkInit.PLLSAI1.PLLSAI1N = 8;
+  PeriphClkInit.PLLSAI1.PLLSAI1N = 16;
   PeriphClkInit.PLLSAI1.PLLSAI1P = RCC_PLLP_DIV7;
   PeriphClkInit.PLLSAI1.PLLSAI1Q = RCC_PLLQ_DIV2;
   PeriphClkInit.PLLSAI1.PLLSAI1R = RCC_PLLR_DIV2;
@@ -294,28 +275,28 @@ void startUpLCDSplashScreen(void) {
   HD44780_ClrScr();								// Clear the LCD Screen.
 }
 
-#if 0
-// Called when first half of buffer is filled
-void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc) {
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
+	HAL_ADC_Stop_DMA(&hadc1);
+	HAL_TIM_Base_Stop_IT(&htim2);
+
+	calculate_heart_beat(adc_buffer[0]);
+	/* Write to LED */
+	//HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_RESET);
+	//data_ready = 1;
+
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&adc_buffer, 1);
+	HAL_TIM_Base_Start_IT(&htim2);
 }
-#endif
 
-// Called when buffer is completely filled
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
+//void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc){
+//  /* Toggle LED */
+//  for (int i = 0; i < 5; i++) {
+//    adc_buffer[i] = 999;
+//    tmp[i] = adc_buffer[i];
+//  }
 
-#if 0
-	uint32_t sum = 0;
-	uint32_t avgMeasured = 0;
-
-	for (int i = 0; i < NUM_OF_SAMPLES; i++) {
-		sum = sum + sampleMeasured[i];
-	}
-	avgMeasured = sum/NUM_OF_SAMPLES;
-  //printf("%lx(%li)\n", avgMeasured, avgMeasured);
-	//pulse_process(avgMeasured);
-#endif
-
-}
+//  //HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_SET);
+//}
 
 /* USER CODE END 4 */
 
@@ -327,7 +308,9 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-
+	  while(1)
+	  {
+	  }
   /* USER CODE END Error_Handler_Debug */
 }
 

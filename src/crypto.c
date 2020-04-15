@@ -88,14 +88,33 @@ int aes256_dec( unsigned char *crypt, int crypt_len, char *plain)
 ParserReturnVal_t CmdCrypto(int mode)
 {
   uint16_t rc;
-	char *para;
-  
-  if(mode != CMD_INTERACTIVE) return CmdReturnOk;
+	char *para, *n;
 
+  char *helpString = 
+    "\r\n"
+    "crypto <message>   -  Test encryption/decryption function\r\n\r\n" ;
+
+	if (mode == CMD_SHORT_HELP) {
+		return CmdReturnOk;
+	}
+
+  // type 'help crypto'
+  if (mode == CMD_LONG_HELP) {
+    rc = fetch_string_arg(&n);
+    if (rc) {
+      printf("%s", helpString);
+    }
+    return CmdReturnOk;
+  }
+  
   rc = fetch_string_arg(&para);
   if(rc) {
-    printf("Please enter string\r\n");
+    printf("%s", helpString);
     return CmdReturnBadParameter1;
+  } else if (strcasecmp(para, "help")==0 || strcasecmp(para, "?")==0) {
+	  /*  type 'crypto help' or 'crypto ?' */
+    printf("%s", helpString);
+    return CmdReturnOk;
   }
 
 	char str[1024];
@@ -123,4 +142,4 @@ ParserReturnVal_t CmdCrypto(int mode)
   return CmdReturnOk;
 }
 
-ADD_CMD("crypto",CmdCrypto,"<message>       Crypt test")
+ADD_CMD("crypto",CmdCrypto,"<message>       Test Encryption")

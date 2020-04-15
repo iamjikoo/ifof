@@ -87,7 +87,7 @@ void laser_run(void *data)
 
   /* receive data from nRF */
   if (radio_recv_data(stringBuffer, sizeof(stringBuffer)) > 0) {
-    printf("rx=(%s)\r\n", stringBuffer);
+    //printf("rx=(%s)\r\n", stringBuffer);
 		//trace(1, "rx=(%s)", stringBuffer);
     lcdPrintPulse(stringBuffer);
   } else {

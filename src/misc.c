@@ -1,7 +1,6 @@
 #include <stdio.h>
-#include <stdint.h>
-#include <ctype.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "common.h"
 
@@ -22,24 +21,38 @@ uint8_t setLogLevel(int level)
 	return log_level;
 }
 
-
 ParserReturnVal_t CmdLog(int mode)
 {
   uint16_t val,rc;
-  
-  if(mode != CMD_INTERACTIVE) return CmdReturnOk;
+	char *para, *n; 
 
-  rc = fetch_uint16_arg(&val);
-  if(rc) {
-    printf("Please supply 0 ~ 3 to set log level\n");
-    printf("Current level: %d\r\n", log_level);
-    return CmdReturnBadParameter1;
+	char *helpString = 
+		"\r\n"
+		"log  [0|1|2|3]   - Set log level\r\n\r\n";
+
+	if (mode == CMD_SHORT_HELP) {
+		return CmdReturnOk;
+	}
+
+	if (mode ==CMD_LONG_HELP) {
+		rc = fetch_string_arg(&n);
+		if (rc)
+			printf("%s", helpString);
+		return CmdReturnOk;
+	}
+
+  rc = fetch_string_arg(&para);
+	if (rc) {
+			printf("Current log level: %d\r\n", log_level);
+			printf("%s", helpString);
+		  return CmdReturnOk;
+	} else if (strlen(para) > 1 || para[0] < '0' || para[0] > '3') { 
+    /*  type 'crypto help' or 'crypto ?' */
+    printf("%s", helpString);
+    return CmdReturnOk;
   }
 
-	if (val < 0 || val > 3) {
-    printf("Invalid log level: set level 0 to 3\r\n");
-    return CmdReturnBadParameter1;
-	}
+	val = atoi(para);
 
 	if (val != log_level) {
     printf("Log level: %d -> %d\r\n", log_level, val);
@@ -54,37 +67,37 @@ ParserReturnVal_t CmdLog(int mode)
 ADD_CMD("log",CmdLog,"0 ~ 3           Set log level")
 
 
-#if 0
 ParserReturnVal_t CmdPinout(int mode)
 {
-  uint16_t val,rc;
-  
-  if(mode != CMD_INTERACTIVE) return CmdReturnOk;
+  if(mode != CMD_INTERACTIVE) 
+		return CmdReturnOk;
 
-  rc = fetch_uint16_arg(&val);
-  if(rc) {
-    printf("Please supply 0 ~ 3 to set trace level\n");
-    printf("Current level: %d\r\n", trc_level);
-    return CmdReturnBadParameter1;
-  }
+  char *pinOutShape = 
+		"\r\n"
+		"              +--[mUSB]--+\r\n"
+		" LCD (D7) PA9 |          | VIN\r\n"
+		" LCD (D6) PA10|          | GND\r\n"
+		"          NRST|  Nucleo  |NRST\r\n"
+		"          GND |  L432KC  | +5V\r\n"
+		"          PA12|          | PA2 USART2 Tx\r\n"
+		" LCD (RS) PB0 |          | PA7 nRF24 (SPI1_MOSI)\r\n"
+		"          PB7 |          | PA6 NRF24 (SPI1_MISO)\r\n"
+		"          PB6 |          | PA5 nRF24 (SPI1_SCK)\r\n"
+		" LCD (EN) PB1 |          | PA4 nRF24 (CE)\r\n"
+		"          NC  |          | PA3 nRF24 (CSN)\r\n"
+		"          NC  |          | PA1 Pulse Sensor\r\n"
+		" Laser Tx PA8 |          | PA0 \r\n"
+		" Laser Rx PA11|          |AREF\r\n"
+		" LCD (D4) PB5 |          |+3V3 --> nRF24L01 Power\r\n"
+		" LCD (D5) PB4 |          | PB3 LCD (RW)\r\n"
+		"              +----------+\r\n";
 
-	if (val < 0 || val > 3) {
-    printf("Invalid trace level: set level 0 to 3\r\n");
-    return CmdReturnBadParameter1;
-	}
-
-	if (val != trc_level) {
-    printf("Trace level: %d -> %d\r\n", trc_level, val);
-	  trc_level = val;
-	} else {
-    printf("Trace level: %d\r\n", trc_level);
-	}
+	printf("%s", pinOutShape);
 
   return CmdReturnOk;
 }
-#endif
+ADD_CMD("pinout",CmdPinout,"                Show pinout")
 
-#if 1 
 void hexDump(const char *desc, const void* data, int len)
 {
 	char tmp[8];
@@ -114,6 +127,5 @@ void hexDump(const char *desc, const void* data, int len)
 	}
 
 }
-#endif
 
 	
