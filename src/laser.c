@@ -22,11 +22,12 @@ void laser_init(void *data)
 
 void lcdPrintLaser(const char* str)
 {
-  static char prev[16]={0,};
+  static char prev[18]={0,};
   if (strcmp(prev, str) !=0) {
+    snprintf(prev, sizeof(prev), "%s", str);
     HD44780_GotoXY(0, 1); // Move cursor to First Line First Position.
     HD44780_PutStr((char*)str);   // Now write it actually to LCD.
-    snprintf(prev, sizeof(prev), "%s", str);
+		HAL_Delay(1000);
   }
 }
 
@@ -35,7 +36,6 @@ void lcdClearLaser()
   const char *empty = "                ";
   lcdPrintLaser(empty);
 }
-
 
 void laser_run(void *data)
 {
@@ -61,12 +61,11 @@ void laser_run(void *data)
 
   /* receive data from nRF */
   if (radio_recv_data(stringBuffer, sizeof(stringBuffer)) > 0) {
-    //printf("rx=(%s)\r\n", stringBuffer);
-	//trace(1, "rx=(%s)", stringBuffer);
-	lcdPrintLaser("Dont Point there");
+	  LOG(1, "rx=(%s)", stringBuffer);
+    lcdPrintLaser("Dont Point there");
   } else {
     lcdClearLaser();
   }
 }
 
-ADD_TASK(laser_run, laser_init, NULL, 100, "laser task");
+ADD_TASK(laser_run, laser_init, NULL, 0, "laser task");

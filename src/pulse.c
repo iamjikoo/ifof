@@ -38,7 +38,6 @@ volatile uint8_t QS = FALSE; // becomes true when finds a beat.
 
 uint16_t adcAvgValue = 0;
 
-char stringBuffer[16] = {0,};
 
 void calculate_heart_beat(uint16_t val) {
 
@@ -124,15 +123,15 @@ void calculate_heart_beat(uint16_t val) {
 	}
 }
 
-
 void lcdPrintPulse(const char* str)
 {
-  static char prev[16]={0,};
+  static char prev[18]={0,};
 
   if (strcmp(prev, str) !=0) {
+    snprintf(prev, sizeof(prev), "%s", str);
     HD44780_GotoXY(6, 0); // Move cursor to First Line First Position.
     HD44780_PutStr((char*)str);   // Now write it actually to LCD.
-    snprintf(prev, sizeof(prev), "%s", str);
+		HAL_Delay(100);
   }
 }
 
@@ -147,8 +146,9 @@ void pulse_init(void *data)
     
 }
 
-void pulse_run(void) // *data)
+void pulse_run(void  *data)
 {
+  char stringBuffer[16] = {0,};
 
   if (QS == TRUE) {
 		  // A Heartbeat Was Found, BPM and IBI have been Determined
@@ -160,5 +160,4 @@ void pulse_run(void) // *data)
 	  }
 }
 
-
-//ADD_TASK(pulse_run, pulse_init, NULL, 10, "pulse task");
+ADD_TASK(pulse_run, pulse_init, NULL, 0, "pulse task");
