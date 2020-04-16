@@ -131,7 +131,7 @@ void lcdPrintPulse(const char* str)
     snprintf(prev, sizeof(prev), "%s", str);
     HD44780_GotoXY(6, 0); // Move cursor to First Line First Position.
     HD44780_PutStr((char*)str);   // Now write it actually to LCD.
-		HAL_Delay(100);
+    HAL_Delay(100);
   }
 }
 
@@ -154,8 +154,8 @@ void pulse_run(void  *data)
 		  // A Heartbeat Was Found, BPM and IBI have been Determined
 		  // Quantified Self "QS" true when we find a heartbeat
 		  QS = FALSE; // reset the Quantified Self flag for next time
-		  //printf("IBI: %d \tBPM: %d \n\r",IBI,BPM);
-		  snprintf(stringBuffer, sizeof(stringBuffer), " %d", BPM);
+		  printf("IBI: %d \tBPM: %d \n\r",IBI,BPM);
+		  snprintf(stringBuffer, sizeof(stringBuffer), " %d ", BPM);
 		  lcdPrintPulse(stringBuffer);
 	  }
 }

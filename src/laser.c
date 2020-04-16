@@ -68,4 +68,4 @@ void laser_run(void *data)
   }
 }
 
-ADD_TASK(laser_run, laser_init, NULL, 0, "laser task");
+ADD_TASK(laser_run, laser_init, NULL, 100, "laser task");
