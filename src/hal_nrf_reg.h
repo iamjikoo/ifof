@@ -19,8 +19,8 @@
 #include "hal_nrf.h"
 #include "main.h"
 
-#ifndef HAL_NRF_REG_H__
-#define HAL_NRF_REG_H__
+#ifndef __HAL_NRF_REG_H
+#define __HAL_NRF_REG_H
 
 /** @name - Instruction Set - */
 //@{
@@ -251,5 +251,5 @@ typedef enum {
 #define RX_EMPTY      0     /**< FIFO_STATUS register bit 0 */
 //@}
 
-#endif // HAL_NRF_REG_H__
+#endif // __HAL_NRF_REG_H
 /** @} */

@@ -18,8 +18,8 @@
  */
 #include "main.h"
 
-#ifndef HAL_NRF_HW_H__
-#define HAL_NRF_HW_H__
+#ifndef __HAL_NRF_HW_H
+#define __HAL_NRF_HW_H
 
 //GPIO_InitTypeDef  GPIO_InitStruct;
 
@@ -88,4 +88,4 @@
 */
 uint8_t hal_nrf_rw(uint8_t value);
 
-#endif /* HAL_NRF_HW_H__ */
+#endif /* __HAL_NRF_HW_H */

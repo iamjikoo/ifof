@@ -44,10 +44,10 @@ uint8_t hal_nrf_rw(uint8_t value)
 
   errcode = HAL_SPI_TransmitReceive(&hspi1, &value, &RxData, 1, 1000);
   //HAL_SPI_TransmitReceive(&hspi1, &value, &RxData, 1, 1000);
-	if (errcode) { 
+  if (errcode) { 
     LOG(1, "tx:%02X, rx:%02X (err:%d) s:%d e:%ld\r\n", value, RxData, errcode, 
-			HAL_SPI_GetState(&hspi1), HAL_SPI_GetError(&hspi1));
-	}
+      HAL_SPI_GetState(&hspi1), HAL_SPI_GetError(&hspi1));
+  }
 
   return RxData;
 }
@@ -562,15 +562,13 @@ uint8_t ctr, length;
       if( (reg = hal_nrf_get_rx_data_source()) < 7)
       {
         length = ctr = hal_nrf_read_rx_pl_w();
-				//printf("reg=%d ctr=%d len=%d\n", reg, ctr, length);
 
         CSN_LOW();
         hal_nrf_rw(RD_RX_PLOAD);
       }
-      else
+      else // reg==7
       {
-       ctr = length = 0; // reg=7
-				//printf("2reg=%d ctr=%d len=%d\n", reg, ctr, length);
+       ctr = length = 0; 
       }
       break;
 
@@ -608,7 +606,6 @@ void hal_nrf_write_multibyte_reg(const uint8_t reg, const uint8_t *pbuf, uint8_t
     default:
       break;
   }
-  //printf("length snd write multibyte reg - %X, length - %d\n", reg, length);
   while(length--)
   {
     hal_nrf_rw(*pbuf++);

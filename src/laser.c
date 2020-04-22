@@ -1,23 +1,14 @@
-#include <string.h>
-//#include <ctype.h>
-
-#include "common.h"
 #include "main.h"
 
+#include "common.h"
 #include "HD44780.h"
 #include "radio.h"
-
 
 volatile uint8_t isLaserDetected = 0;
 
 void setLaserDetection(int onoff) 
 {
   isLaserDetected = onoff;
-}
-
-void laser_init(void *data)
-{
-
 }
 
 void lcdPrintLaser(const char* str)
@@ -27,7 +18,7 @@ void lcdPrintLaser(const char* str)
     snprintf(prev, sizeof(prev), "%s", str);
     HD44780_GotoXY(0, 1); // Move cursor to First Line First Position.
     HD44780_PutStr((char*)str);   // Now write it actually to LCD.
-		HAL_Delay(1000);
+    HAL_Delay(1000);
   }
 }
 
@@ -61,11 +52,11 @@ void laser_run(void *data)
 
   /* receive data from nRF */
   if (radio_recv_data(stringBuffer, sizeof(stringBuffer)) > 0) {
-	  LOG(1, "rx=(%s)", stringBuffer);
+    LOG(1, "rx=(%s)", stringBuffer);
     lcdPrintLaser("Dont Point there");
   } else {
     lcdClearLaser();
   }
 }
 
-ADD_TASK(laser_run, laser_init, NULL, 100, "laser task");
+ADD_TASK(laser_run, NULL, NULL, 100, "laser task");

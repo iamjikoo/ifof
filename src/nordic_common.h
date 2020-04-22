@@ -11,8 +11,8 @@
  * @author Ken A. Redergaard
  */
 
-#ifndef NORDIC_COMMON_H__
-#define NORDIC_COMMON_H__
+#ifndef __NORDIC_COMMON_H
+#define __NORDIC_COMMON_H
 
 /** Swaps the upper byte with the lower byte in a 16 bit variable */
 //lint -emacro((572),SWAP) // Suppress warning 572 "Excessive shift value"
@@ -37,4 +37,4 @@
 #define BIT_6 0x40 /**< The value of bit 6 */
 #define BIT_7 0x80 /**< The value of bit 7 */
 
-#endif // NORDIC_COMMON_H__
+#endif // __NORDIC_COMMON_H

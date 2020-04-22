@@ -41,15 +41,9 @@
  * use where we're using them to implement the higher level EVP interface, as is
  * the case here.
  */
-//#include "internal/deprecated.h"
 
 #include <assert.h>
 
-#include <stdlib.h>
-//#include <openssl/crypto.h>
-
-//#include <openssl/aes.h>
-//#include "aes.h"
 #include "aes_local.h"
 
 #ifndef AES_ASM
@@ -65,33 +59,6 @@ Td2[x] = Si[x].[0d, 0b, 0e, 09];
 Td3[x] = Si[x].[09, 0d, 0b, 0e];
 Td4[x] = Si[x].[01];
 */
-
-#if 0
-# ifdef AES_LONG
-typedef unsigned long u32;
-# else
-typedef unsigned int u32;
-# endif
-typedef unsigned short u16;
-typedef unsigned char u8;
-#endif
-
-#if 0
-/* This should be a hidden type, but EVP requires that the size be known */
-#  define AES_MAXNR 14
-struct aes_key_st {
-#  ifdef AES_LONG
-    unsigned long rd_key[4 * (AES_MAXNR + 1)];
-#  else
-    unsigned int rd_key[4 * (AES_MAXNR + 1)];
-#  endif
-    int rounds;
-};
-typedef struct aes_key_st AES_KEY;
-#endif
-
-
-
 
 static const u32 Te0[256] = {
     0xc66363a5U, 0xf87c7c84U, 0xee777799U, 0xf67b7b8dU,

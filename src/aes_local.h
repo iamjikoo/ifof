@@ -37,8 +37,7 @@ typedef unsigned char u8;
 /* This controls loop-unrolling in aes_core.c */
 # undef FULL_UNROLL
 
-#if 1 
-// from aes.h
+// From aes.h
 /* This should be a hidden type, but EVP requires that the size be known */
 #define AES_MAXNR 14
 struct aes_key_st {
@@ -50,20 +49,13 @@ struct aes_key_st {
     int rounds;
 };
 typedef struct aes_key_st AES_KEY;
-//
+// aes.h
 
 
-// extern
-extern int AES_set_encrypt_key(const unsigned char *userKey, const int bits,
-                        AES_KEY *key);
-extern void AES_encrypt(const unsigned char *in, unsigned char *out,
-                 const AES_KEY *key);
-
-extern int AES_set_decrypt_key(const unsigned char *userKey, const int bits,
-                        AES_KEY *key);
-extern void AES_decrypt(const unsigned char *in, unsigned char *out,
-                 const AES_KEY *key);
-#endif
-
+// extern functon prototypes
+int  AES_set_encrypt_key(const unsigned char *userKey, const int bits, AES_KEY *key);
+void AES_encrypt(const unsigned char *in, unsigned char *out, const AES_KEY *key);
+int  AES_set_decrypt_key(const unsigned char *userKey, const int bits, AES_KEY *key);
+void AES_decrypt(const unsigned char *in, unsigned char *out, const AES_KEY *key);
 
 #endif                          /* !OSSL_CRYPTO_AES_LOCAL_H */
