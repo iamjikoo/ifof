@@ -21,7 +21,7 @@ Installation
 Open an Ubuntu terminal window by pressing CTRL-ALT-T.
 
 
- 1. From the command prompt execute the following:
+ 1 From the command prompt execute the following:
      sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
     sudo apt-get update
     sudo apt-get install gcc-arm-none-eabi
