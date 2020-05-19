@@ -39,15 +39,15 @@ Install:
 
  5. Then in this directory type "sudo make install"
 
- 6. You can test if the openOCD install worked by running the following command:
+ 6 You can test if the openOCD install worked by running the following command:
  ```
-    /usr/local/bin/openocd --version
+/usr/local/bin/openocd --version
  ```
- 7. To enable st-link support you might have to run the openocd command:
+ * To enable st-link support you might have to run the openocd command:
 
       sudo ./configure --enable-stlink
 
- 8. To install minicom perform the following:
+* To install minicom perform the following:
 
     sudo apt-get install minicom
  
