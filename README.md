@@ -22,14 +22,17 @@ Open an Ubuntu terminal window by pressing CTRL-ALT-T.
 
 
 From the command prompt execute the following:
+
     sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
     sudo apt-get update
     sudo apt-get install gcc-arm-none-eabi
 
 Install:
+
     sudo apt-get install libftdi-dev libusb-1.0-0-dev
 
  3. You now need to install the On chip debugger support. You should be able to find the file in the tools folder. Download it directly into ubuntu and expand the file into the directory structure which will contain a directory called openocd-0.9.0. Go into the directory you expanded it to and type:
+
      ./configure
 
  4. Then in this directory type "make"
@@ -37,15 +40,19 @@ Install:
  5. Then in this directory type "sudo make install"
 
  6. You can test if the openOCD install worked by running the following command:
+
     /usr/local/bin/openocd --version
  
  7. To enable st-link support you might have to run the openocd command:
+
     sudo ./configure --enable-stlink
 
  8. To install minicom perform the following:
+
     sudo apt-get install minicom
  
  9. To run minicom with your USB cables connected to the STM32 board run. 
+
     sudo minicom -D /dev/ttyACM0
  
 The following steps if done correctly will make it so yo do not have to put in sudo all the time for the make commands and minicom.
