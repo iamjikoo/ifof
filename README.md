@@ -1,6 +1,10 @@
 IFoF 
 =======
 
+IFoF 
+--------
+
+
 This project is a simple monitor program for the IFoF Capstone project on the STM32L432 board. 
 This processor has 256K of flash and 48K of RAM. The board has 10 LEDs, sensers.
 
@@ -18,7 +22,7 @@ Open an Ubuntu terminal window by pressing CTRL-ALT-T.
 
 
  1. From the command prompt execute the following:
-    sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
+     sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
     sudo apt-get update
     sudo apt-get install gcc-arm-none-eabi
 
