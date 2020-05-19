@@ -21,12 +21,12 @@ Installation
 Open an Ubuntu terminal window by pressing CTRL-ALT-T.
 
 
- 1 From the command prompt execute the following:
-     sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
+From the command prompt execute the following:
+    sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
     sudo apt-get update
     sudo apt-get install gcc-arm-none-eabi
 
- 2. Install:
+Install:
     sudo apt-get install libftdi-dev libusb-1.0-0-dev
 
  3. You now need to install the On chip debugger support. You should be able to find the file in the tools folder. Download it directly into ubuntu and expand the file into the directory structure which will contain a directory called openocd-0.9.0. Go into the directory you expanded it to and type:
