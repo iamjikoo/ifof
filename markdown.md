@@ -41,9 +41,6 @@ use `code`  or
     code block
 
 or use 
-`
+``
     code block
-`
-
-
-
+``
